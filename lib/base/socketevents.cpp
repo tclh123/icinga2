@@ -20,6 +20,7 @@
 #include "base/socketevents.hpp"
 #include "base/exception.hpp"
 #include "base/logger.hpp"
+#include "base/gc.hpp"
 #include <boost/thread/once.hpp>
 #include <boost/foreach.hpp>
 #include <map>
@@ -66,7 +67,7 @@ void SocketEvents::InitializeThread(void)
 
 	l_SocketIOSockets[l_SocketIOEventFDs[0]] = sed;
 
-	l_SocketIOThread = boost::thread(&SocketEvents::ThreadProc);
+	l_SocketIOThread = boost::thread(GC::WrapThread(&SocketEvents::ThreadProc));
 }
 
 void SocketEvents::ThreadProc(void)

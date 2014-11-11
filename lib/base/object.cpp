@@ -31,9 +31,8 @@ REGISTER_PRIMITIVE_TYPE(Object, None, Object::GetPrototype());
  * Default constructor for the Object class.
  */
 Object::Object(void)
-	: m_References(0)
 #ifdef I2_DEBUG
-	, m_LockOwner(0)
+	: m_LockOwner(0), m_References(0)
 #endif /* I2_DEBUG */
 { }
 
@@ -41,7 +40,11 @@ Object::Object(void)
  * Destructor for the Object class.
  */
 Object::~Object(void)
-{ }
+{
+#ifdef I2_DEBUG
+	VERIFY(m_References == 0);
+#endif /* I2_DEBUG */
+}
 
 /**
  * Returns a string representation for the object.
@@ -122,3 +125,21 @@ Type::Ptr Object::GetReflectionType(void) const
 	return Object::TypeInstance;
 }
 
+#pragma GCC visibility push(hidden)
+
+extern "C++" {
+
+void *operator new(size_t size)
+{
+	GC::Initialize();
+	return GC_malloc(size);
+}
+
+void operator delete(void *ptr)
+{
+	GC_free(ptr);
+}
+
+}
+
+#pragma GCC visibility pop
