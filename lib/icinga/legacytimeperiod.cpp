@@ -451,44 +451,47 @@ Dictionary::Ptr LegacyTimePeriod::FindNextSegment(const String& daydef, const St
 	return Dictionary::Ptr();
 }
 
-Array::Ptr LegacyTimePeriod::ScriptFunc(const TimePeriod::Ptr& tp, double begin, double end)
+bool LegacyTimePeriod::ScriptFunc(const TimePeriod::Ptr& tp, double ts)
 {
-	Array::Ptr segments = new Array();
 
 	Dictionary::Ptr ranges = tp->GetRanges();
 
 	if (ranges) {
-		for (int i = 0; i <= (end - begin) / (24 * 60 * 60); i++) {
-			time_t refts = begin + i * 24 * 60 * 60;
-			tm reference = Utility::LocalTime(refts);
+		tm reference = Utility::LocalTime(ts);
+
+#ifdef I2_DEBUG
+		Log(LogDebug, "LegacyTimePeriod")
+		    << "Checking reference time " << ts;
+#endif /* I2_DEBUG */
+
+		ObjectLock olock(ranges);
+		BOOST_FOREACH(const Dictionary::Pair& kv, ranges) {
+			if (!IsInDayDefinition(kv.first, &reference)) {
+#ifdef I2_DEBUG
+				Log(LogDebug, "LegacyTimePeriod")
+				    << "Not in day definition '" << kv.first << "'.";
+#endif /* I2_DEBUG */
+				continue;
+			}
 
 #ifdef I2_DEBUG
 			Log(LogDebug, "LegacyTimePeriod")
-			    << "Checking reference time " << refts;
+			    << "In day definition '" << kv.first << "'.";
 #endif /* I2_DEBUG */
 
-			ObjectLock olock(ranges);
-			BOOST_FOREACH(const Dictionary::Pair& kv, ranges) {
-				if (!IsInDayDefinition(kv.first, &reference)) {
-#ifdef I2_DEBUG
-					Log(LogDebug, "LegacyTimePeriod")
-					    << "Not in day definition '" << kv.first << "'.";
-#endif /* I2_DEBUG */
-					continue;
-				}
+			Array::Ptr segments = new Array();
+			ProcessTimeRanges(kv.second, &reference, segments);
 
-#ifdef I2_DEBUG
-				Log(LogDebug, "LegacyTimePeriod")
-				    << "In day definition '" << kv.first << "'.";
-#endif /* I2_DEBUG */
-
-				ProcessTimeRanges(kv.second, &reference, segments);
+			ObjectLock xlock(segments);
+			BOOST_FOREACH(const Dictionary::Ptr& segment, segments) {
+				if (ts >= segment->Get("begin") && ts <= segment->Get("end"))
+					return true;
 			}
 		}
 	}
 
 	Log(LogDebug, "LegacyTimePeriod")
-	    << "Legacy timeperiod update returned " << segments->GetLength() << " segments.";
+	    << "Not in timeperiod: " << ts;
 
-	return segments;
+	return false;
 }

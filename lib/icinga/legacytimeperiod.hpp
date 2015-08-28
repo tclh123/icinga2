@@ -35,7 +35,7 @@ namespace icinga
 class I2_ICINGA_API LegacyTimePeriod
 {
 public:
-	static Array::Ptr ScriptFunc(const TimePeriod::Ptr& tp, double start, double end);
+	static bool ScriptFunc(const TimePeriod::Ptr& tp, double ts);
 
 	static bool IsInTimeRange(tm *begin, tm *end, int stride, tm *reference);
 	static void FindNthWeekday(int wday, int n, tm *reference);

@@ -37,28 +37,11 @@ public:
 	DECLARE_OBJECT(TimePeriod);
 	DECLARE_OBJECTNAME(TimePeriod);
 
-	static void StaticInitialize(void);
-
-	virtual void Start(void) override;
-
-	void UpdateRegion(double begin, double end, bool clearExisting);
-
 	virtual bool GetIsInside(void) const override;
 
 	bool IsInside(double ts) const;
-	double FindNextTransition(double begin);
 
 	virtual void ValidateRanges(const Dictionary::Ptr& value, const ValidationUtils& utils) override;
-
-private:
-	void AddSegment(double s, double end);
-	void AddSegment(const Dictionary::Ptr& segment);
-	void RemoveSegment(double begin, double end);
-	void PurgeSegments(double end);
-
-	void Dump(void);
-
-	static void UpdateTimerHandler(void);
 };
 
 }

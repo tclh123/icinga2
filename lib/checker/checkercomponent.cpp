@@ -157,10 +157,16 @@ void CheckerComponent::CheckThreadProc(void)
 
 			TimePeriod::Ptr tp = checkable->GetCheckPeriod();
 
-			if (tp && !tp->IsInside(Utility::GetTime())) {
-				Log(LogNotice, "CheckerComponent")
-				    << "Skipping check for object '" << checkable->GetName() << "': not in check_period";
-				check = false;
+			try {
+				if (tp && !tp->IsInside(Utility::GetTime())) {
+					Log(LogNotice, "CheckerComponent")
+					    << "Skipping check for object '" << checkable->GetName() << "': not in check_period";
+					check = false;
+				}
+			} catch (const std::exception& ex) {
+				Log(LogCritical, "CheckerComponent")
+				    << "Error while evaluating check_period for object '" << checkable->GetName()
+				    << " - assuming that it should be checked anyway': " << DiagnosticInformation(ex);
 			}
 		}
 
