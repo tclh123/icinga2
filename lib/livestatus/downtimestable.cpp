@@ -172,5 +172,12 @@ Value DowntimesTable::TriggeredByAccessor(const Value& row)
 {
 	Downtime::Ptr downtime = static_cast<Downtime::Ptr>(row);
 
-	return downtime->GetTriggeredByLegacyId();
+	String triggerDowntimeName = downtime->GetTriggeredBy();
+
+	Downtime::Ptr triggerDowntime = Downtime::GetByName(triggerDowntimeName);
+
+	if (triggerDowntime)
+		return triggerDowntime->GetLegacyId();
+
+	return Empty;
 }

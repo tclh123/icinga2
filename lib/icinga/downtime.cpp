@@ -237,20 +237,14 @@ String Downtime::AddDowntime(const Checkable::Ptr& checkable, const String& auth
 	}
 
 	if (!triggeredBy.IsEmpty()) {
-		Downtime::Ptr otherDowntime = Downtime::GetByName(triggeredBy);
-		Dictionary::Ptr triggers = otherDowntime->GetTriggers();
+		Downtime::Ptr triggerDowntime = Downtime::GetByName(triggeredBy);
+		Array::Ptr triggers = triggerDowntime->GetTriggers();
 
-		triggers->Set(triggeredBy, triggeredBy);
+		if (!triggers->Contains(triggeredBy))
+			triggers->Add(triggeredBy);
 	}
 
 	Downtime::Ptr downtime = Downtime::GetByName(fullName);
-
-	if (!triggeredBy.IsEmpty()) {
-		Downtime::Ptr triggerDowntime = Downtime::GetByName(triggeredBy);
-
-		if (triggerDowntime)
-			downtime->SetTriggeredByLegacyId(triggerDowntime->GetLegacyId());
-	}
 
 	Log(LogNotice, "Downtime")
 	    << "Added downtime '" << downtime->GetName()
@@ -321,12 +315,12 @@ void Downtime::TriggerDowntime(void)
 	if (GetTriggerTime() == 0)
 		SetTriggerTime(Utility::GetTime());
 
-	Dictionary::Ptr triggers = GetTriggers();
+	Array::Ptr triggers = GetTriggers();
 
 	{
 		ObjectLock olock(triggers);
-		BOOST_FOREACH(const Dictionary::Pair& kv, triggers) {
-			Downtime::GetByName(kv.first)->TriggerDowntime();
+		BOOST_FOREACH(const String& id, triggers) {
+			Downtime::GetByName(id)->TriggerDowntime();
 		}
 	}
 
