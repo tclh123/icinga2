@@ -208,6 +208,71 @@ Use the `period` attribute to assign time periods to
       period = "workhours"
     }
 
+## <a id="advanced-use-of apply-rules"></a> Advanced Use of Apply Rules
+
+The use of [apply rules](3-monitoring-basics.md#using-apply) allows for creating a ruleset which is completly based on host objects and their attributes.
+Usage of [apply for and cutsom attribute override](3-monitoring-basics.md#using-apply-for) extends this possiblities.
+
+In the following example a dictionary of webserver instances on the host object is used to add different checks:
+
+* a ping check on the address the webserver instances is running on
+* a tcp check for the port the instance is using
+* optionally a http check if an url is given for the webserver instance
+
+    object Host "webserver01" {
+      import "generic-host"
+      address = "127.0.0.1"
+      vars.os = "Linux"
+      vars.webserver = {
+        instance["foo"] = {
+          address = "127.0.0.2"
+          port = "80"
+          url = "/foo"
+        }
+        instance["bar"] = {
+          address = "127.0.0.3"
+          port = "8080"
+        }
+        instance["foobar"] = {
+          address = "127.0.0.3"
+          port = "443"
+          url = "/foobar"
+          ssl = true
+        }
+      }
+    }
+    
+    apply Service "webserver_ping" for (instance => config in host.vars.webserver.instance) {
+      display_name = "webserver_" + instance
+      check_command = "ping4"
+      vars.ping_address = config.address
+      assign where host.vars.webserver.instance
+    }
+    
+    apply Service "webserver_port" for (instance => config in host.vars.webserver.instance) {
+      display_name = "webserver_" + instance + "_" + config.port
+      check_command = "tcp"
+      vars.tcp_address = config.address
+      vars.tcp_port = config.port
+      assign where host.vars.webserver.instance
+    }
+    
+    apply Service "webserver_url" for (instance => config in host.vars.webserver.instance) {
+      display_name = "webserver_" + instance + "_" + config.url
+      check_command = "http"
+      vars.http_address = config.address
+      vars.http_port = config.port
+      vars.http_uri = config.url
+      if (config.ssl) {
+        vars.http_ssl = config.ssl
+      }
+      assign where config.url
+    }
+
+Because the variables are used for different checks, they are not prefixed on the host.
+The service display names are changed to include more information than only the instance name.
+And by using the key and value from the for loop it allows for conditionally applying the url check.
+
 ## <a id="use-functions-object-config"></a> Use Functions in Object Configuration
 
 There is a limited scope where functions can be used as object attributes such as:
