@@ -709,6 +709,16 @@ simap_address   | **Optional.** The host's address. Defaults to "$address$" if t
 simap_port      | **Optional.** The host's port.
 simap_timeout   | **Optional.** The timeout in seconds.
 
+### <a id="plugin-check-command-smart"></a> smart
+
+Check command object for the `check_ide_smart` plugin. Requires installation of `smartctl`.
+
+Custom attributes passed as [command parameters](3-monitoring-basics.md#command-passing-parameters):
+
+Name            | Description
+----------------|--------------
+smart_device    | **Required.** The name of a local hard drive to monitor.
+
 
 ### <a id="plugin-check-command-smtp"></a> smtp
 
