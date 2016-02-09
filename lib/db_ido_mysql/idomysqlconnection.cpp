@@ -190,6 +190,7 @@ void IdoMysqlConnection::Reconnect(void)
 	String issl_key, issl_cert, issl_ca, issl_capath, issl_cipher;
 	const char *host, *socket_path, *user , *passwd, *db;
 	const char *ssl_key, *ssl_cert, *ssl_ca, *ssl_capath, *ssl_cipher;
+	bool enable_ssl;
 	long port;
 
 	ihost = GetHost();
@@ -198,6 +199,7 @@ void IdoMysqlConnection::Reconnect(void)
 	ipasswd = GetPassword();
 	idb = GetDatabase();
 
+	enable_ssl = GetEnableSsl();
 	issl_key = GetSslKey();
 	issl_cert = GetSslCert();
 	issl_ca = GetSslCa();
@@ -216,7 +218,12 @@ void IdoMysqlConnection::Reconnect(void)
 	ssl_ca = (!issl_ca.IsEmpty()) ? issl_ca.CStr() : NULL;
 	ssl_capath = (!issl_capath.IsEmpty()) ? issl_capath.CStr() : NULL;
 	ssl_cipher = (!issl_cipher.IsEmpty()) ? issl_cipher.CStr() : NULL;
-	bool have_ssl = (ssl_key || ssl_cert || ssl_ca || ssl_capath || ssl_cipher);
+	if ((ssl_key || ssl_cert || ssl_ca || ssl_capath || ssl_cipher) && !enable_ssl) {
+		Log(LogCritical, "IdoMysqlConnection")
+		    << "Configuration error: Any SSL option is set but 'enable_ssl' is not";
+		BOOST_THROW_EXCEPTION(std::invalid_argument("Config Error"));
+		//TODO: Throw some better exception
+	}
 
 	/* connection */
 	if (!mysql_init(&m_Connection)) {
@@ -226,7 +233,7 @@ void IdoMysqlConnection::Reconnect(void)
 		BOOST_THROW_EXCEPTION(std::bad_alloc());
 	}
 
-	if (have_ssl) {
+	if (enable_ssl) {
 		mysql_ssl_set(&m_Connection, ssl_key, ssl_cert, ssl_ca, ssl_capath, ssl_cipher);
 	}
 
@@ -235,8 +242,8 @@ void IdoMysqlConnection::Reconnect(void)
 		    << "Connection to database '" << db << "' with user '" << user << "' on '" << host << ":" << port
 		    << "' failed: \"" << mysql_error(&m_Connection) << "\"";
 		Log(LogDebug, "IdoMySqlConnection")
-		    << "Have SSL: " << (have_ssl ? "YES": "NO");
-		if (have_ssl) {
+		    << "SSL enabled: " << (enable_ssl ? "YES": "NO");
+		if (enable_ssl) {
 			Log(LogDebug, "IdoMysqlConnection")
 			    << "ssl_key: " << ssl_key;
 			Log(LogDebug, "IdoMysqlConnection")
