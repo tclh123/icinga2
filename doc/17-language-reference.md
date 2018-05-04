@@ -410,7 +410,7 @@ EventEngine                |**Read-write.** The name of the socket event engine,
 AttachDebugger             |**Read-write.** Whether to attach a debugger when Icinga 2 crashes. Defaults to `false`.
 ICINGA2\_RLIMIT\_FILES     |**Read-write.** Defines the resource limit for RLIMIT_NOFILE that should be set at start-up. Value cannot be set lower than the default `16 * 1024`. 0 disables the setting. Set in Icinga 2 sysconfig.
 ICINGA2\_RLIMIT\_PROCESSES |**Read-write.** Defines the resource limit for RLIMIT_NPROC that should be set at start-up. Value cannot be set lower than the default `16 * 1024`. 0 disables the setting. Set in Icinga 2 sysconfig.
-ICINGA2\_RLIMIT\_STACK     |**Read-write.** Defines the resource limit for RLIMIT_STACK that should be set at start-up. Value cannot be set lower than the default `256 * 1024`. 0 disables the setting. Set in Icinga 2 sysconfig.
+ICINGA2\_RLIMIT\_STACK     |**Read-write.** Defines the resource limit for RLIMIT_STACK that should be set at start-up. Value cannot be set lower than the minimum `256 * 1024`. 0 disables the setting. Default is `0`. Set in Icinga 2 sysconfig.
 
 ## Apply <a id="apply"></a>
 

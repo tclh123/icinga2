@@ -228,10 +228,10 @@ void Application::SetResourceLimits()
 	stackLimit = GetRLimitStack();
 
 	if (stackLimit != 0) {
-		if (stackLimit < GetDefaultRLimitStack()) {
+		if (stackLimit < GetMinimumRLimitStack()) {
 			Log(LogWarning, "Application")
-				<< "The user-specified value for RLimitStack cannot be smaller than the default value (" << GetDefaultRLimitStack() << "). Using the default value instead.";
-			stackLimit = GetDefaultRLimitStack();
+				<< "The user-specified value for RLimitStack cannot be smaller than the minimum value (" << GetMinimumRLimitStack() << "). Using the minimum value instead.";
+			stackLimit = GetMinimumRLimitStack();
 		}
 
 		if (set_stack_rlimit)
@@ -1536,6 +1536,11 @@ int Application::GetRLimitStack()
 }
 
 int Application::GetDefaultRLimitStack()
+{
+	return 0;
+}
+
+int Application::GetMinimumRLimitStack()
 {
 	return 256 * 1024;
 }

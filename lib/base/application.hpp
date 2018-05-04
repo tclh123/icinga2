@@ -144,6 +144,7 @@ public:
 
 	static int GetRLimitStack();
 	static int GetDefaultRLimitStack();
+	static int GetMinimumRLimitStack();
 	static void DeclareRLimitStack(int limit);
 
 	static int GetConcurrency();
